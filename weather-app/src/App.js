@@ -20,12 +20,21 @@ class App extends Component {
     error: undefined
   }
 
-  getWeather = async (e) => {  
+  chooseAPI = (e) => {
     e.preventDefault();    
-    const cityInput = document.querySelector('.city');
-    const countryInput = document.querySelector('.country'); 
-    const city = cityInput.value;
-    const country = countryInput.value;
+    const leftAPI=document.querySelector("#first");
+    const rightAPI = document.querySelector("#second");
+
+    if (leftAPI.checked) {
+      this.getWeather();
+    } else if (rightAPI.checked){
+      this.getWeatherSecondAPI();
+    }
+  }
+
+  getWeather = async () => {  
+    const city = document.querySelector('.city').value;
+    const country = document.querySelector('.country').value;
 
     const URL = `http://api.openweathermap.org/data/2.5/weather?q=${city},${country}&appid=${FIRST_API_KEY}&units=metric`;
     const api_call = await fetch(URL);
@@ -52,16 +61,13 @@ class App extends Component {
     } 
   }
 
-  getWeatherSecondAPI = async (e) => {
- 
+  getWeatherSecondAPI = async () => {
     let latitude;
     let longitude
 
     const secondUrlRequest = async () => {
-      const cityInput = document.querySelector('.city');
-      const city = cityInput.value;
-      const countryInput = document.querySelector('.country'); 
-      const country = countryInput.value;
+      const city = document.querySelector('.city').value;
+      const country = document.querySelector('.country').value;
       const Location_URL = `https://geocode-maps.yandex.ru/1.x/?apikey=${GEOLOCATION_KEY}&format=json&geocode=${city}+${country}`;
       const apiCall = await fetch(Location_URL);
       const data = await apiCall.json();
@@ -73,21 +79,19 @@ class App extends Component {
     }
   
     const secondGetWeather = async () => {
-      const cityInput = document.querySelector('.city');
-      const city = cityInput.value;
-      const countryInput = document.querySelector('.country'); 
-      const country = countryInput.value;
-      const second_URL = `https://api.weatherbit.io/v2.0/forecast/daily?&lat=${latitude}&lon=${longitude}&key=${SECOND_API_KEY}`;
+      const city = document.querySelector('.city').value;
+      const country = document.querySelector('.country').value;
+      const second_URL = `https://api.weatherbit.io/v2.0/current?&lat=${latitude}&lon=${longitude}&key=${SECOND_API_KEY}`;
       const second_api_call = await fetch(second_URL);
       const data = await second_api_call.json();
 
       if (city && country) {
         this.setState({
-        temperature: data.main.temp,
-        city: data.name,
-        country: data.sys.country,
-        humidity: data.main.humidity,
-        description: data.weather[0].description,
+        temperature: data.data[0].app_temp,
+        city: data.data[0].city_name,
+        country: data.data[0].country_code,
+        humidity: data.data[0].rh,
+        description: data.data[0].weather.description,
         error: ""
         });
       } else {
@@ -109,7 +113,7 @@ class App extends Component {
       <div>
         <Title />
         <Switch />
-        <Form getWeather = {this.getWeather}/>
+        <Form chooseAPI = {this.chooseAPI}/>
         <Weather
          temperature={this.state.temperature} 
          city={this.state.city}
