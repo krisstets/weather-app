@@ -4,3 +4,41 @@ body {
   background-size: 100vw 100vh;
 }
 
+.weather_form {        
+  width: 25%;
+  margin: 0 auto; 
+}
+
+.city {
+background: none;
+border: none;
+border-bottom: solid 2px rgba(166, 208, 235, 0.582);
+margin-left: 10px;
+margin-right: 10px;
+}
+
+.city:focus {
+  outline: none;
+}
+
+.country {
+  background: none;
+  border: none;
+  border-bottom: solid 2px rgba(166, 208, 235, 0.582); 
+}
+
+.country:focus {
+  outline: none;
+}
+
+button {
+  margin-left: 10px;
+  border: none;
+  background: rgba(166, 208, 235, 0.582);
+  border: none;
+  
+}
+
+button:focus {
+  outline: none;
+}

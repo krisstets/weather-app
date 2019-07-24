@@ -9,7 +9,7 @@ import Switch from './components/Switch';
 const FIRST_API_KEY = "197bb3bc90d1a83fe282b5e8b3d6bb29";
 const SECOND_API_KEY = "ace74d2f83d7499ebad97bbdc4f0a4d4";
 const GEOLOCATION_KEY = "18101055-4c6d-4805-9ebc-acadca40ad98";
-
+const storage = window.localStorage;
 
 class App extends Component {
   state ={ 
@@ -20,9 +20,31 @@ class App extends Component {
     error: undefined
   }
 
+storageSave = (api) => {
+const cityInput = document.querySelector('.city').value;
+const countryInput = document.querySelector('.country').value;
+const time = new Date();
+const time_hours = time.getHours();
+const time_minutes = time.getMinutes();
+console.log(time_hours, time_minutes);  
+
+storage.setItem("API", api);
+storage.setItem("cityInput", cityInput);
+storage.setItem("countryInput", countryInput);
+storage.setItem("city", this.state.city);
+storage.setItem("country", this.state.country);
+storage.setItem("temperature", this.state.temperature);
+storage.setItem("humidity", this.state.humidity);
+storage.setItem("condition", this.state.description);
+storage.setItem("hours", time_hours);
+storage.setItem("minutes", time_minutes);
+
+console.log(storage);
+}
+
   chooseAPI = (e) => {
     e.preventDefault();    
-    const leftAPI=document.querySelector("#first");
+    const leftAPI = document.querySelector("#first");
     const rightAPI = document.querySelector("#second");
 
     if (leftAPI.checked) {
@@ -35,6 +57,7 @@ class App extends Component {
   getWeather = async () => {  
     const city = document.querySelector('.city').value;
     const country = document.querySelector('.country').value;
+    const firstAPI = 'firstAPI';
 
     const URL = `http://api.openweathermap.org/data/2.5/weather?q=${city},${country}&appid=${FIRST_API_KEY}&units=metric`;
     const api_call = await fetch(URL);
@@ -58,7 +81,8 @@ class App extends Component {
         description: undefined,
         error: "Please enter the value"
       });
-    } 
+    }
+    this.storageSave(firstAPI); 
   }
 
   getWeatherSecondAPI = async () => {
@@ -84,6 +108,7 @@ class App extends Component {
       const second_URL = `https://api.weatherbit.io/v2.0/current?&lat=${latitude}&lon=${longitude}&key=${SECOND_API_KEY}`;
       const second_api_call = await fetch(second_URL);
       const data = await second_api_call.json();
+      const secondAPI = "secondAPI";
 
       if (city && country) {
         this.setState({
@@ -104,6 +129,7 @@ class App extends Component {
           error: "Please enter the value"
         });
       }
+      this.storageSave(secondAPI);
     }
     secondUrlRequest();
   }
@@ -127,8 +153,46 @@ class App extends Component {
   };
 
  componentDidMount() {
-   const cityInput = document.querySelector('.city');
-   const countryInput = document.querySelector('.country'); 
+  const cityInput = document.querySelector('.city');
+  const countryInput = document.querySelector('.country'); 
+
+  const current_time = new Date();
+  const current_hours = current_time.getHours();
+  const current_minutes = current_time.getMinutes();
+
+  const firstAPI = document.querySelector("#first");
+  const secondAPI = document.querySelector("#second");
+
+  if (current_hours - Number(storage.hours) >= 2 && current_minutes > Number(storage.minutes)) {
+    storage.clear();
+  }
+
+  if (storage.length === 0) {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition);
+    }
+  } else {
+    this.setState({
+      temperature: storage.temperature,
+      city: storage.city,
+      country: storage.country,
+      humidity: storage.humidity,
+      description: storage.condition,
+      error: ""
+    });
+
+    cityInput.value = storage.cityInput;
+    countryInput.value = storage.countryInput;
+
+    if (storage.API === "firstAPI") {
+      firstAPI.checked = true;
+      secondAPI.checked = false;
+    } else if (storage.API === "secondAPI") {
+      secondAPI.checked = true;
+      firstAPI.checked = false;
+    }
+  }
+
 
     function showPosition(position) {
       const long = position.coords.longitude;
@@ -147,10 +211,6 @@ class App extends Component {
       weatherRequest();
     }
 
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(showPosition);
-    }
-    
     const weatherRequest = async () => {
       const URL = `http://api.openweathermap.org/data/2.5/weather?q=${cityInput.value},${countryInput.value}&appid=${FIRST_API_KEY}&units=metric`;
       const api_call = await fetch(URL);
