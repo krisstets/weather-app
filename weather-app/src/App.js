@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import './App.css';
-import Title from "./components/Title";
 import Form from "./components/Form";
 import Weather from "./components/Weather";
 import Switch from './components/Switch';
@@ -20,45 +19,40 @@ class App extends Component {
     error: undefined
   }
 
-storageSave = (api) => {
-const cityInput = document.querySelector('.city').value;
-const countryInput = document.querySelector('.country').value;
-const time = new Date();
-const time_hours = time.getHours();
-const time_minutes = time.getMinutes();
-console.log(time_hours, time_minutes);  
+  storageSave = (api) => {
+    const cityInput = document.querySelector('.city').value;
+    const countryInput = document.querySelector('.country').value;
+    const time = new Date();
+    const time_now = time.getTime();
 
-storage.setItem("API", api);
-storage.setItem("cityInput", cityInput);
-storage.setItem("countryInput", countryInput);
-storage.setItem("city", this.state.city);
-storage.setItem("country", this.state.country);
-storage.setItem("temperature", this.state.temperature);
-storage.setItem("humidity", this.state.humidity);
-storage.setItem("condition", this.state.description);
-storage.setItem("hours", time_hours);
-storage.setItem("minutes", time_minutes);
-
-console.log(storage);
-}
+    storage.setItem("API", api);
+    storage.setItem("cityInput", cityInput);
+    storage.setItem("countryInput", countryInput);
+    storage.setItem("city", this.state.city);
+    storage.setItem("country", this.state.country);
+    storage.setItem("temperature", this.state.temperature);
+    storage.setItem("humidity", this.state.humidity);
+    storage.setItem("condition", this.state.description);
+    storage.setItem("time", time_now);
+  }
 
   chooseAPI = (e) => {
     e.preventDefault();    
+
     const leftAPI = document.querySelector("#first");
     const rightAPI = document.querySelector("#second");
 
     if (leftAPI.checked) {
-      this.getWeather();
+      this.getWeatherFirstAPI();
     } else if (rightAPI.checked){
       this.getWeatherSecondAPI();
     }
   }
 
-  getWeather = async () => {  
+  getWeatherFirstAPI = async () => {  
     const city = document.querySelector('.city').value;
     const country = document.querySelector('.country').value;
     const firstAPI = 'firstAPI';
-
     const URL = `http://api.openweathermap.org/data/2.5/weather?q=${city},${country}&appid=${FIRST_API_KEY}&units=metric`;
     const api_call = await fetch(URL);
     const data = await api_call.json();
@@ -69,7 +63,7 @@ console.log(storage);
       city: data.name,
       country: data.sys.country,
       humidity: data.main.humidity,
-      description: data.weather[0].description,
+      description: data.weather[0].description.charAt(0).toUpperCase().concat(data.weather[0].description.slice(1)),
       error: ""
       });
     } else {
@@ -92,8 +86,8 @@ console.log(storage);
     const secondUrlRequest = async () => {
       const city = document.querySelector('.city').value;
       const country = document.querySelector('.country').value;
-      const Location_URL = `https://geocode-maps.yandex.ru/1.x/?apikey=${GEOLOCATION_KEY}&format=json&geocode=${city}+${country}`;
-      const apiCall = await fetch(Location_URL);
+      const locationURL = `https://geocode-maps.yandex.ru/1.x/?apikey=${GEOLOCATION_KEY}&format=json&geocode=${city}+${country}`;
+      const apiCall = await fetch(locationURL);
       const data = await apiCall.json();
 
       latitude = data.response.GeoObjectCollection.featureMember[0].GeoObject.Point.pos.split(" ")[1];
@@ -105,9 +99,9 @@ console.log(storage);
     const secondGetWeather = async () => {
       const city = document.querySelector('.city').value;
       const country = document.querySelector('.country').value;
-      const second_URL = `https://api.weatherbit.io/v2.0/current?&lat=${latitude}&lon=${longitude}&key=${SECOND_API_KEY}`;
-      const second_api_call = await fetch(second_URL);
-      const data = await second_api_call.json();
+      const secondURL = `https://api.weatherbit.io/v2.0/current?&lat=${latitude}&lon=${longitude}&key=${SECOND_API_KEY}`;
+      const secondApiCall = await fetch(secondURL);
+      const data = await secondApiCall.json();
       const secondAPI = "secondAPI";
 
       if (city && country) {
@@ -136,10 +130,9 @@ console.log(storage);
 
   render() {
     return(
-      <div>
-        <Title />
+      <div className="App"> 
         <Switch />
-        <Form chooseAPI = {this.chooseAPI}/>
+        <Form chooseAPI={this.chooseAPI}/>
         <Weather
          temperature={this.state.temperature} 
          city={this.state.city}
@@ -147,56 +140,55 @@ console.log(storage);
          humidity={this.state.humidity}
          description={this.state.description}
          error={this.state.error}
-         />
+        />
       </div>
     );
   };
 
- componentDidMount() {
-  const cityInput = document.querySelector('.city');
-  const countryInput = document.querySelector('.country'); 
+  componentDidMount() {
+    const city = document.querySelector('.city');
+    const country = document.querySelector('.country'); 
+    const currentTime = new Date();
+    const currentTimeNow = currentTime.getTime();
+    const TWO_HOURS = 7200000;
+    const firstAPI = document.querySelector("#first");
+    const secondAPI = document.querySelector("#second");
 
-  const current_time = new Date();
-  const current_hours = current_time.getHours();
-  const current_minutes = current_time.getMinutes();
-
-  const firstAPI = document.querySelector("#first");
-  const secondAPI = document.querySelector("#second");
-
-  if (current_hours - Number(storage.hours) >= 2 && current_minutes > Number(storage.minutes)) {
-    storage.clear();
-  }
-
-  if (storage.length === 0) {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(showPosition);
+    if (Number(currentTimeNow - storage.time_now) > TWO_HOURS) {
+      storage.clear();
     }
-  } else {
-    this.setState({
-      temperature: storage.temperature,
-      city: storage.city,
-      country: storage.country,
-      humidity: storage.humidity,
-      description: storage.condition,
-      error: ""
-    });
 
-    cityInput.value = storage.cityInput;
-    countryInput.value = storage.countryInput;
+    if (storage.length === 0) {
+      if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(showPosition);
+      }
+    } else {
+        this.setState({
+          temperature: storage.temperature,
+          city: storage.city,
+          country: storage.country,
+          humidity: storage.humidity,
+          description: storage.condition,
+          error: ""
+        });
 
-    if (storage.API === "firstAPI") {
-      firstAPI.checked = true;
-      secondAPI.checked = false;
-    } else if (storage.API === "secondAPI") {
-      secondAPI.checked = true;
-      firstAPI.checked = false;
-    }
-  }
+        city.value = storage.cityInput;
+        country.value = storage.countryInput;
+
+        if (storage.API === "firstAPI") {
+          firstAPI.checked = true;
+          secondAPI.checked = false;
+        } else if (storage.API === "secondAPI") {
+          secondAPI.checked = true;
+          firstAPI.checked = false;
+        }
+      }
 
 
     function showPosition(position) {
       const long = position.coords.longitude;
       const lat = position.coords.latitude;
+
       urlRequest(long, lat);
     } 
 
@@ -205,14 +197,14 @@ console.log(storage);
       const apiCall = await fetch(Location_URL);
       const data = await apiCall.json();
 
-      cityInput.value = data.response.GeoObjectCollection.featureMember[3].GeoObject.name;
-      countryInput.value = data.response.GeoObjectCollection.featureMember[3].GeoObject.description;
+      city.value = data.response.GeoObjectCollection.featureMember[3].GeoObject.name;
+      country.value = data.response.GeoObjectCollection.featureMember[3].GeoObject.description;
 
       weatherRequest();
     }
 
     const weatherRequest = async () => {
-      const URL = `http://api.openweathermap.org/data/2.5/weather?q=${cityInput.value},${countryInput.value}&appid=${FIRST_API_KEY}&units=metric`;
+      const URL = `http://api.openweathermap.org/data/2.5/weather?q=${city.value},${country.value}&appid=${FIRST_API_KEY}&units=metric`;
       const api_call = await fetch(URL);
       const data = await api_call.json();
 
@@ -221,13 +213,11 @@ console.log(storage);
         city: data.name,
         country: data.sys.country,
         humidity: data.main.humidity,
-        description: data.weather[0].description,
+        description: data.weather[0].description.charAt(0).toUpperCase().concat(data.weather[0].description.slice(1)),
         error: ""
-        });
+      });
     }
-
   }
-
 }
 
 export default App;

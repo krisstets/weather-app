@@ -4,17 +4,22 @@ body {
   background-size: 100vw 100vh;
 }
 
+.App {
+  text-align: center;
+}
+
 .weather_form {        
-  width: 25%;
-  margin: 0 auto; 
+  width: 28%;
+  margin: 50px auto; 
+ 
 }
 
 .city {
 background: none;
 border: none;
 border-bottom: solid 2px rgba(166, 208, 235, 0.582);
-margin-left: 10px;
 margin-right: 10px;
+width: 100px;
 }
 
 .city:focus {
@@ -25,20 +30,62 @@ margin-right: 10px;
   background: none;
   border: none;
   border-bottom: solid 2px rgba(166, 208, 235, 0.582); 
+  width: 100px; 
 }
 
 .country:focus {
   outline: none;
 }
 
-button {
-  margin-left: 10px;
+.get_weather_button {
   border: none;
   background: rgba(166, 208, 235, 0.582);
-  border: none;
-  
+  margin-left: 10px;
+  height: 40px;
+  cursor: pointer;
+  margin-top: 10px;
 }
 
-button:focus {
+.get_weather_button:focus {
   outline: none;
+}
+
+.location {
+  font-size: 3em;
+}
+
+.temperature {
+  font-size: 2em;
+  display: inline;
+  margin: 20px; 
+}
+
+.humidity {
+  font-size: 2em;
+  display: inline;
+  margin: 20px;
+}
+
+.description {
+  font-size: 1.5em;
+}
+
+.radio {
+  font-size: 24px;
+  font-weight: 500;
+  text-transform: capitalize;
+  display: inline-block;
+  vertical-align: middle;
+  color: rgb(243, 241, 241);
+  margin-top: 10px;
+}
+
+.switch {
+  border: none;
+  width: 20px;
+  height: 20px;
+}
+
+.switch:hover {
+  box-shadow: -4px 13px 22px -6px rgba(25, 108, 202, 0.66);
 }
